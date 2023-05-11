@@ -1,5 +1,9 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+#custom Configration 
+#to not upload images
+/src/images
+
 # Compiled output
 /dist
 /tmp

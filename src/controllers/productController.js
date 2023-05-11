@@ -15,6 +15,10 @@ async function add_product (product_data){
     let new_product = await productModel.create(product_data)
     return new_product
 }
+async function get_Image_for_product(file){
+    let pathLink = "http://localhost:5000/"+file.filename;
+    return pathLink;
+}
 // ******************** get product Data *************************
 
 async function getproductByID (id) {
@@ -39,6 +43,7 @@ module.exports={
     getproductByID,
     getproductByCategoryID,
     add_product,
+    get_Image_for_product
 }
 
 

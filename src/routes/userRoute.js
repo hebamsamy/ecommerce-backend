@@ -88,7 +88,6 @@ route.post("/login", async function (req, res) {
 //************************ Update User ************************
 
 route.post("/update", verifyToken, async function (req, res) {
-  console.log(req.token);
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
       res.json({
@@ -98,7 +97,7 @@ route.post("/update", verifyToken, async function (req, res) {
         success: false,
       });
     } else {
-      let id = data.data_of_login_user._id;
+      let id = data.user._id;
       //todo: update in database
     }
   });
@@ -118,7 +117,6 @@ route.get("/", async function (req, res) {
 
 // add product to user wishlist
 route.post("/wishlist/add", verifyToken, async function (req, res) {
-  console.log(req.token);
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
       res.json({
@@ -128,31 +126,28 @@ route.post("/wishlist/add", verifyToken, async function (req, res) {
         success: false,
       });
     } else {
-      let id = data.data_of_login_user._id;
+      let id = data.user._id;
       await userModel
         .findById(id)
         .then((user) => {
-          console.log(user);
           //check if exists
-          user.wishlist.forEach((item) => {
-            console.log(item);
-            if (item.id == req.body.id) {
-              res.json({
-                message: "product already in wish list",
-                status: 400,
-                data: user.wishlist,
-                success: false,
-              });
-            }
-          });
-          user.wishlist.push(req.body);
-          user.save();
+         if(user.wishlist.find((item) =>item._id == req.body._id)){
           res.json({
-            message: "all user data",
-            status: 200,
-            data: user,
-            success: true,
+            message: "product already in wish list",
+            status: 400,
+            data: user.wishlist,
+            success: false,
           });
+         }else{
+           user.wishlist.push(req.body);
+           user.save();
+           res.json({
+             message: "all user data",
+             status: 200,
+             data: user.wishlist,
+             success: true,
+           });
+         }
         })
         .catch((err) => {
           res.json({
@@ -167,7 +162,6 @@ route.post("/wishlist/add", verifyToken, async function (req, res) {
 });
 //get all wish list items for user
 route.get("/wishlist", verifyToken, async function (req, res) {
-  console.log(req.token);
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
       res.json({
@@ -177,11 +171,10 @@ route.get("/wishlist", verifyToken, async function (req, res) {
         success: false,
       });
     } else {
-      let id = data.data_of_login_user._id;
+      let id = data.user._id;
       userModel
         .findById(id)
         .then((user) => {
-          console.log(user);
           res.json({
             message: "all user wish list",
             status: 200,
@@ -201,7 +194,7 @@ route.get("/wishlist", verifyToken, async function (req, res) {
   });
 });
 //get all wish list items for user
-route.get("/wishlist/remove/:id", verifyToken, async function (req, res) {
+route.delete("/wishlist/remove/:id", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
       res.json({
@@ -211,11 +204,10 @@ route.get("/wishlist/remove/:id", verifyToken, async function (req, res) {
         success: false,
       });
     } else {
-      let id = data.data_of_login_user._id;
+      let id = data.user._id;
       await userModel
         .findById(id)
         .then((user) => {
-          console.log(user);
           let result = user.wishlist.filter((item) => {
             return item.id != req.params.id;
           });
@@ -225,7 +217,7 @@ route.get("/wishlist/remove/:id", verifyToken, async function (req, res) {
           res.json({
             message: "all user data",
             status: 200,
-            data: user,
+            data: user.wishlist,
             success: true,
           });
         })
@@ -241,8 +233,7 @@ route.get("/wishlist/remove/:id", verifyToken, async function (req, res) {
   });
 });
 //get all wish list items for user
-route.get("/wishlist/empty", verifyToken, async function (req, res) {
-  console.log(req.token);
+route.delete("/wishlist/empty", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
       res.json({
@@ -252,11 +243,10 @@ route.get("/wishlist/empty", verifyToken, async function (req, res) {
         success: false,
       });
     } else {
-      let id = data.data_of_login_user._id;
+      let id = data.user._id;
       userModel
         .findById(id)
         .then((user) => {
-          console.log(user);
           user.wishlist = []
           user.save()
           res.json({

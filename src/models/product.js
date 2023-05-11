@@ -5,7 +5,6 @@ const productSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true,
     },
     description: {
         type: String,
@@ -13,7 +12,7 @@ const productSchema = mongoose.Schema({
     },
     imgURL: {
         type: String,
-        default: "http://localhost:5000/uploads/default.png"
+        default: "http://localhost:5000/default.png"
     },
     price: {
         type: Number,
@@ -25,20 +24,25 @@ const productSchema = mongoose.Schema({
     },
     categoryID: {
         type: Number,
-        required: true,
     },
-    // createdDate: {
-    //     type: Date,
-    //     default: Date.now,
-    // },
-
-    // status: {
-    //     type: String,
-    //     default: "offline",
-    //     enum: {
-    //         values: ['available','out of order'],
-    //     }
-    // },
+    categoryName: {
+        type: String,
+    },
+    colors:{
+        type:Array
+    },
+    /////
+    createdDate: {
+        type: Date,
+        default: Date.now,
+    },
+    status: {
+        type: String,
+        default: "available",
+        enum: {
+            values: ['available','out of order'],
+        }
+    },
 }, {
     versionKey:false,
     strict:false,

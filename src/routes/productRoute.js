@@ -1,15 +1,20 @@
 const express = require("express");
 const route = express.Router();
-const multer = require('multer');
 const productController = require("../controllers/productController")
+const productModel = require("../models/product");
+const fs = require("fs");
+const bcrypt = require("bcryptjs");
+let secret = fs.readFileSync("secret.key");
+const { verifyToken } = require("../shared/auth");
+const jwt = require("jsonwebtoken");
 
+const multer = require('multer');
 const multerStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "./public/uploads")
+        cb(null, "src/images")
     },
     filename: (req, file, cb) => {
-
-        cb(null, file.originalname);
+        cb(null, Date.now()+'_'+ file.originalname);
     }
 })
 // The filteration
@@ -27,9 +32,6 @@ const upload = multer({
     fileFilter: multerFilter
 })
 
-// // Add new product
-// route.post("/", function(req, res) {
-// })
 //************************Get All Products ************************
 route.get("/", async function (req, res) {
     const products = await productController.getAll();
@@ -72,40 +74,62 @@ route.get("/:id", async function(req, res) {
     }
 })
 
+///////////////////////////////////////////Add
+// route.post("/add", verifyToken, upload.single("img"),async function (req, res) {
+route.post("/add" , upload.single("imgURL"),async function (req, res) {
+  // jwt.verify(req.token, secret, async (err, data) => {
+  //     if (err) {
+  //       res.json({
+  //         message: "Error:invalid credentials , on token found",
+  //         status: 401,
+  //         data: req.token,
+  //         success: false,
+  //       });
+  //     } else {
+        // let id = data.user._id;
+        //for multer
+        let img = await productController.get_Image_for_product(req.file)
+        //todo: add in database
+        let product = new productModel({
+            name:req.body.name,
+            description:req.body.description,
+            imgURL:img,
+            colors:req.body.colors,
+            price:req.body.price,
+            quantity:req.body.quantity,
+            categoryID:req.body.categoryID,
+            categoryName:req.body.categoryName,
+        })
+        try {
+            product = await product.save()
+            res.json({
+                message: "successfully added",
+                status: 200,
+                data: product,
+                success: true,
+              });
+        } catch (e) {
+            res.json({
+                message: "Error:invalid product ,"+e,
+                status: 401,
+                data: null,
+                success: false,
+              });
+        }
+      // }
+    // });
+  });
+  
+////////////// Delete Product ////////////
+route.delete("/delete/:id", (req, res) => {
+    const { id } = req.params;
 
-// When writing a new message ..........{conversationId: "Id", sender: "Sendertype", text: ""} is required
-// route.post("/", async function(req, res) {
-//     try {
-//         const message = {
-//             senderType: req.body.senderType,
-//             date:  Date.now,
-//             text: req.body.text
-//         }
-//         Conversation.findById(req.body.conversationId).then((data)=> {
-//             console.log(data);
-//             data.messages.push(message);
-//             Company.findById(data.companyId).then((company)=>{
-//                 company.newMessage = true;
-//                 company.save();
-//             });
-//             Client.findById(data.clientId).then((client)=>{
-//                 client.newMessage = true;
-//                 client.save();
-//             });
-
-//             data.save();
-
-//             res.status(200).json({success: true, message: "You sent a new message", data: data.messages});
-//         }).catch((err)=> {
-//             console.log(err);
-//             res.status(500).json({success: false, message: err.message})
-//         })
-//     }
-//     catch(err)  {
-//         console.log(err);
-//         res.status(500).json({success: false, message: err.message})
-//     }
-// })
+//     productModel.findByIdAndDelete( id)
+//       .then(() => {
+//         console.log("Deleted product successfully!");
+//       })
+//       .catch((err) => console.log(err));
+  })
 
 
 module.exports = route;
