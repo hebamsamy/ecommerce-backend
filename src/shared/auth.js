@@ -8,7 +8,7 @@ function verifyToken (req,res,next){
         next()
     }
     else{
-        console.log("in verifyToken")
+        console.log("in verifyToken: Token is empty")
         res.status(403).send("Error")
     }
 }
