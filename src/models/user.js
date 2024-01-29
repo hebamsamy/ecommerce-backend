@@ -33,6 +33,10 @@ const userSchema = mongoose.Schema({
         type : Array,
         default:[]
     },
+    cartlist:{
+        type : Array,
+        default:[]
+    },
     // nationalId: {
     //     type: String,
     // },

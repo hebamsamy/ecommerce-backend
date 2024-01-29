@@ -209,7 +209,7 @@ route.delete("/wishlist/remove/:id", verifyToken, async function (req, res) {
         .findById(id)
         .then((user) => {
           let result = user.wishlist.filter((item) => {
-            return item.id != req.params.id;
+            return item._id != req.params.id;
           });
           user.wishlist = result;
 
@@ -253,6 +253,160 @@ route.delete("/wishlist/empty", verifyToken, async function (req, res) {
             message: "all user wish list",
             status: 200,
             data: user.wishlist,
+            success: true,
+          });
+        })
+        .catch((err) => {
+          res.json({
+            message: "user not found",
+            status: 400,
+            data: null,
+            success: false,
+          });
+        });
+    }
+  });
+});
+// ******************** CartLIST *************************
+
+// add product to user Cartlist
+route.post("/cartlist/add", verifyToken, async function (req, res) {
+  jwt.verify(req.token, secret, async (err, data) => {
+    if (err) {
+      res.json({
+        message: "Error:invalid credentials , on token found",
+        status: 401,
+        data: req.token,
+        success: false,
+      });
+    } else {
+      let id = data.user._id;
+      await userModel
+        .findById(id)
+        .then((user) => {
+          //check if exists
+         if(user.cartlist.find((item) =>item._id == req.body._id)){
+          res.json({
+            message: "product already in Cart list",
+            status: 400,
+            data: user.cartlist,
+            success: false,
+          });
+         }else{
+           user.cartlist.push(req.body);
+           user.save();
+           res.json({
+             message: "all user data",
+             status: 200,
+             data: user.cartlist,
+             success: true,
+           });
+         }
+        })
+        .catch((err) => {
+          res.json({
+            message: "user not found",
+            status: 400,
+            data: null,
+            success: false,
+          });
+        });
+    }
+  });
+});
+//get all cart list items for user
+route.get("/cartlist", verifyToken, async function (req, res) {
+  jwt.verify(req.token, secret, async (err, data) => {
+    if (err) {
+      res.json({
+        message: "Error:invalid credentials , on token found",
+        status: 401,
+        data: req.token,
+        success: false,
+      });
+    } else {
+      let id = data.user._id;
+      userModel
+        .findById(id)
+        .then((user) => {
+          res.json({
+            message: "all user cart list",
+            status: 200,
+            data: user.cartlist,
+            success: true,
+          });
+        })
+        .catch((err) => {
+          res.json({
+            message: "user not found",
+            status: 400,
+            data: null,
+            success: false,
+          });
+        });
+    }
+  });
+});
+//get all cart list items for user
+route.delete("/cartlist/remove/:id", verifyToken, async function (req, res) {
+  jwt.verify(req.token, secret, async (err, data) => {
+    if (err) {
+      res.json({
+        message: "Error:invalid credentials , on token found",
+        status: 401,
+        data: req.token,
+        success: false,
+      });
+    } else {
+      let id = data.user._id;
+      await userModel
+        .findById(id)
+        .then((user) => {
+          let result = user.cartlist.filter((item) => {
+            return item._id != req.params.id;
+          });
+          user.cartlist = result;
+
+          user.save();
+          res.json({
+            message: "all user data",
+            status: 200,
+            data: user.cartlist,
+            success: true,
+          });
+        })
+        .catch((err) => {
+          res.json({
+            message: "user not found",
+            status: 400,
+            data: null,
+            success: false,
+          });
+        });
+    }
+  });
+});
+//get all cart list items for user
+route.delete("/cartlist/empty", verifyToken, async function (req, res) {
+  jwt.verify(req.token, secret, async (err, data) => {
+    if (err) {
+      res.json({
+        message: "Error:invalid credentials , on token found",
+        status: 401,
+        data: req.token,
+        success: false,
+      });
+    } else {
+      let id = data.user._id;
+      userModel
+        .findById(id)
+        .then((user) => {
+          user.cartlist = []
+          user.save()
+          res.json({
+            message: "all user cart list",
+            status: 200,
+            data: user.cartlist,
             success: true,
           });
         })

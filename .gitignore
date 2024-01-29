@@ -2,7 +2,7 @@
 
 #custom Configration 
 #to not upload images
-/src/images
+
 
 # Compiled output
 /dist
