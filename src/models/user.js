@@ -9,8 +9,8 @@ const userSchema = mongoose.Schema({
         type: String,
         unique: true,
         required: "Email address is required",
-        validate:{
-            validator: function(val) {
+        validate: {
+            validator: function (val) {
                 let pattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
                 return pattern.test(val);
             },
@@ -29,13 +29,23 @@ const userSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    wishlist:{
-        type : Array,
-        default:[]
+    wishlist: {
+        type: Array,
+        default: []
     },
-    cartlist:{
-        type : Array,
-        default:[]
+    cartlist: {
+        type: [{
+            quantity: {
+                type: Number,
+                default: 1
+            },
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Prodyct",
+                required: true,
+            },
+        }],
+        default: []
     },
     // nationalId: {
     //     type: String,
@@ -45,16 +55,17 @@ const userSchema = mongoose.Schema({
     //     min: 15,
     //     max: 70
     // },
-    // gender: {
-    //     type: String,
-    //     enum: {
-    //         values: ['male', 'female'],
-    //         message: "You entered not valid value"
-    //     }
-    // },
+    role: {
+        type: String,
+        default: 'user',
+        enum: {
+            values: ['admin', 'vendor', 'user'],
+            message: "You entered not valid value"
+        }
+    },
 }, {
-    versionKey:false,
-    strict:false,
+    versionKey: false,
+    strict: false,
 })
 
 module.exports = mongoose.model("User", userSchema);

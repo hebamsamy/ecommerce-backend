@@ -4,6 +4,8 @@ const cors = require("cors");
 // importing the connection and routes
 const connect = require("./connectonDb");
 const productRoute = require("./src/routes/productRoute");
+const categoryRoute = require("./src/routes/categoryRoute");
+const orderRoute = require("./src/routes/orderRoute");
 const userRoute = require("./src/routes/userRoute");
 
 // Setting the port
@@ -37,6 +39,8 @@ app.use((req, res, next) => {
 // Routes middleware
 app.use("/user", userRoute);
 app.use("/product", productRoute);
+app.use("/category", categoryRoute);
+app.use("/order", orderRoute);
 
 
 app.listen(port,()=>{

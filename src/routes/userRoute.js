@@ -1,6 +1,7 @@
 const userController = require("../controllers/userController");
+const productController = require("../controllers/productController");
 const userModel = require("../models/user");
-
+const productModel = require("../models/product");
 const express = require("express");
 const route = express.Router();
 const jwt = require("jsonwebtoken");
@@ -10,13 +11,12 @@ let secret = fs.readFileSync("secret.key");
 const { verifyToken } = require("../shared/auth");
 
 //************************ Register ************************
-
 route.post("/register", async function (req, res) {
   if (
     req.body.name == "" ||
     req.body.email == "" ||
     req.body.password == "" ||
-    req.body.phoneNumber == "" 
+    req.body.phoneNumber == ""
   ) {
     res.json({
       message: "Error : you should insert valid values",
@@ -49,9 +49,7 @@ route.post("/register", async function (req, res) {
     }
   }
 });
-
 //************************ Login ************************
-
 route.post("/login", async function (req, res) {
   const user = await userController.getUserByEmail(req.body.email);
   if (!user) {
@@ -72,7 +70,7 @@ route.post("/login", async function (req, res) {
           message: "Login Successfully",
           status: 200,
           success: true,
-          data: {user:user,token:token},
+          data: { user: user, token: token },
         });
       });
     } else {
@@ -86,7 +84,6 @@ route.post("/login", async function (req, res) {
   }
 });
 //************************ Update User ************************
-
 route.post("/update", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
@@ -102,7 +99,6 @@ route.post("/update", verifyToken, async function (req, res) {
     }
   });
 });
-
 //************************ All Client ************************
 route.get("/", async function (req, res) {
   const clients = await userController.getAllClients();
@@ -114,7 +110,6 @@ route.get("/", async function (req, res) {
   });
 });
 // ******************** WISHLIST *************************
-
 // add product to user wishlist
 route.post("/wishlist/add", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
@@ -131,23 +126,23 @@ route.post("/wishlist/add", verifyToken, async function (req, res) {
         .findById(id)
         .then((user) => {
           //check if exists
-         if(user.wishlist.find((item) =>item._id == req.body._id)){
-          res.json({
-            message: "product already in wish list",
-            status: 400,
-            data: user.wishlist,
-            success: false,
-          });
-         }else{
-           user.wishlist.push(req.body);
-           user.save();
-           res.json({
-             message: "all user data",
-             status: 200,
-             data: user.wishlist,
-             success: true,
-           });
-         }
+          if (user.wishlist.find((item) => item._id == req.body._id)) {
+            res.json({
+              message: "product already in wish list",
+              status: 400,
+              data: user.wishlist,
+              success: false,
+            });
+          } else {
+            user.wishlist.push(req.body);
+            user.save();
+            res.json({
+              message: "all user data",
+              status: 200,
+              data: user.wishlist,
+              success: true,
+            });
+          }
         })
         .catch((err) => {
           res.json({
@@ -212,7 +207,6 @@ route.delete("/wishlist/remove/:id", verifyToken, async function (req, res) {
             return item._id != req.params.id;
           });
           user.wishlist = result;
-
           user.save();
           res.json({
             message: "all user data",
@@ -268,7 +262,6 @@ route.delete("/wishlist/empty", verifyToken, async function (req, res) {
   });
 });
 // ******************** CartLIST *************************
-
 // add product to user Cartlist
 route.post("/cartlist/add", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
@@ -285,23 +278,26 @@ route.post("/cartlist/add", verifyToken, async function (req, res) {
         .findById(id)
         .then((user) => {
           //check if exists
-         if(user.cartlist.find((item) =>item._id == req.body._id)){
-          res.json({
-            message: "product already in Cart list",
-            status: 400,
-            data: user.cartlist,
-            success: false,
-          });
-         }else{
-           user.cartlist.push(req.body);
-           user.save();
-           res.json({
-             message: "all user data",
-             status: 200,
-             data: user.cartlist,
-             success: true,
-           });
-         }
+          if (user.cartlist.find((item) => item.product._id == req.body._id)) {
+            res.json({
+              message: "product already in Cart list",
+              status: 400,
+              data: list,
+              success: false,
+            });
+          } else {
+            user.cartlist.push({
+              quantity: 1,
+              product: req.body._id
+            });
+            user.save();
+            res.json({
+              message: "all user data",
+              status: 200,
+              data: user.cartlist,
+              success: true,
+            });
+          }
         })
         .catch((err) => {
           res.json({
@@ -347,7 +343,7 @@ route.get("/cartlist", verifyToken, async function (req, res) {
     }
   });
 });
-//get all cart list items for user
+//remove from cart  cart._id (params)
 route.delete("/cartlist/remove/:id", verifyToken, async function (req, res) {
   jwt.verify(req.token, secret, async (err, data) => {
     if (err) {
@@ -366,7 +362,45 @@ route.delete("/cartlist/remove/:id", verifyToken, async function (req, res) {
             return item._id != req.params.id;
           });
           user.cartlist = result;
-
+          user.save();
+          res.json({
+            message: "all user data",
+            status: 200,
+            data: user.cartlist,
+            success: true,
+          });
+        })
+        .catch((err) => {
+          res.json({
+            message: "user not found",
+            status: 400,
+            data: null,
+            success: false,
+          });
+        });
+    }
+  });
+});
+//edit from cart  cart._id (params)
+route.put("/cartlist/edit/:id", verifyToken, async function (req, res) {
+  jwt.verify(req.token, secret, async (err, data) => {
+    if (err) {
+      res.json({
+        message: "Error:invalid credentials , on token found",
+        status: 401,
+        data: req.token,
+        success: false,
+      });
+    } else {
+      let id = data.user._id;
+      await userModel
+        .findById(id)
+        .then((user) => {
+          user.cartlist.forEach((item) => {
+            if(item._id == req.params.id){
+              item.quantity = req.body.quantity
+            }
+          });
           user.save();
           res.json({
             message: "all user data",

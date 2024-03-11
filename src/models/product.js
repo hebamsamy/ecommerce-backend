@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const productSchema = mongoose.Schema({
-    /////////////////////////Commen
     name: {
         type: String,
         required: true,
@@ -23,15 +22,13 @@ const productSchema = mongoose.Schema({
         required: true,
     },
     categoryID: {
-        type: Number,
-    },
-    categoryName: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
     },
     colors:{
         type:Array
     },
-    /////
     createdDate: {
         type: Date,
         default: Date.now,
@@ -43,6 +40,11 @@ const productSchema = mongoose.Schema({
             values: ['available','out of order'],
         }
     },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    }
 }, {
     versionKey:false,
     strict:false,
